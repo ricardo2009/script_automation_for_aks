@@ -1,6 +1,6 @@
 # Welcome to the Git Automation Repository for the Azure Kubernetes Service (AKS)
 
-<img src="image.png" width="100" height="100" />
+<img src="https://blog.autify.com/static/2f2eae815f49c7e1dd68d646863f82c0/test-automation-illustration.png" width="100" height="100" />
 
 ## This repository contains the automation scripts for the AKS. Each folder contains a README.md file that describes the purpose of the scripts in that folder and how to use them
 
