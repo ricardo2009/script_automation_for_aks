@@ -3,15 +3,17 @@
 ## This repository contains the automation scripts for the AKS. Each folder contains a README.md file that describes the purpose of the scripts in that folder and how to use them.
 
 - [★] Upgrade-aks-cluster. - Contains scripts to upgrade the AKS cluster and the nodes in the cluster, using best practices.
-- [✍] Backup - Contains scripts to backup the AKS cluster and the nodes in the cluster, using best practices. 🚀{Not available yet, but coming soon!}
+- [✍] Backup - Contains scripts to backup the AKS cluster and the nodes in the cluster, using best practices. {Not available yet, but coming soon!}
 - [✍] ServiceMesh
-  - [ ] Istio - Contains scripts to install and configure Istio on the AKS cluster. 🚀{Not available yet, but coming soon!}
-  - [ ] Linkerd - Contains scripts to install and configure Linkerd on the AKS cluster. 🚀{Not available yet, but coming soon!}
-- [✍] Monitoring - Contains scripts to install and configure monitoring on the AKS cluster. 🚀{Not available yet, but coming soon!}
-- [✍] Logging - Contains scripts to install and configure logging on the AKS cluster. 🚀{Not available yet, but coming soon!}
-- [✍] Security - Contains scripts to install and configure security on the AKS cluster. 🚀{Not available yet, but coming soon!}
-- [✍] Networking - Contains scripts to install and configure networking on the AKS cluster. 🚀{Not available yet, but coming soon!}
+  - [🚀] Istio - Contains scripts to install and configure Istio on the AKS cluster.
+  - [🚀 ] Linkerd - Contains scripts to install and configure Linkerd on the AKS cluster. 
+- [✍] Monitoring - Contains scripts to install and configure monitoring on the AKS cluster.
+- [✍] Logging - Contains scripts to install and configure logging on the AKS cluster.
+- [✍] Security - Contains scripts to install and configure security on the AKS cluster. 
+- [✍] Networking - Contains scripts to install and configure networking on the AKS cluster.
 
+
+{Not available yet, but coming soon!} - These scripts are not available yet, but will be coming soon!✍🚀
 ## How to use the scripts
 
 1. Clone the repository to your local machine.
