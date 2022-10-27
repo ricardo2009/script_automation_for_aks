@@ -13,6 +13,7 @@ echo "                                     "
 echo "                                     "
 echo "                                     "
 echo "====================================="
+echo "                                     "
 echo "     AKS Cluster Upgrade Script      "
 echo "                                     "
 echo "subscription :"
@@ -45,13 +46,14 @@ echo "                                     "
 echo "                                     "
 echo "                                     "
 echo "====================================="
+echo "                                     "
 echo "     AKS Cluster Upgrade Script      "
 echo "                                     "
 echo "subscription :" $subscription
 echo "resourcegroup :" $resourcegroup
 echo "                                     "
 echo "====================================="
-
+echo "                                     "
 function resource_group_name() {
     if [ -z "$resourcegroup" ]; then
         select resourcegroup in $(az group list --query "[].name" -o tsv)
