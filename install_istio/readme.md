@@ -1,5 +1,8 @@
 # Install Istio on AKS cluster
 
+[[ WARNING !!! ]]
+Esse script está em desenvolvimento !!
+
 This script install Istio on AKS cluster 
 
 ## Usage

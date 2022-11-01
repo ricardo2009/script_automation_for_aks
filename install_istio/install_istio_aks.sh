@@ -184,3 +184,6 @@ EOF
 }
 
 main
+
+
+Se cada dia util tem 8 
