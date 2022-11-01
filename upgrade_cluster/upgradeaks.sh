@@ -124,7 +124,7 @@ echo "                                     "
 
 
 ## Required Bootstrap VARIABLES
-export UPDATE_TO_KUBERNETES_VERSION=""
+
 export TEMP_FOLDER="${TEMP_FOLDER:-.tmp/}"
 export CLUSTERS_FILE_NAME="${CLUSTERS_FILE_NAME:-clusterUpgradeCandidatesSummary.json}"
 export ERR_LOG_FILE_NAME="${ERR_LOG_FILE_NAME:-err.log}"
@@ -151,10 +151,10 @@ function UPDATE_TO_KUBERNETES_VERSION() {
 }
 
 UPDATE_TO_KUBERNETES_VERSION
-TEMP_FOLDER="./tmp/"
-CLUSTERS_FILE_NAME="clusterUpgradeCandidatesSummary.json"
-ERR_LOG_FILE_NAME=$(date +"%Y-%m-%d-%H-%M-%S")-err.log
-EXCLUDED_CLUSTERS_LIST=${EXCLUDED_CLUSTERS_LIST:-""}
+#TEMP_FOLDER=$(mktemp -d)
+#CLUSTERS_FILE_NAME="${TEMP_FOLDER}/${CLUSTERS_FILE_NAME}"
+#ERR_LOG_FILE_NAME="${TEMP_FOLDER}/${ERR_LOG_FILE_NAME}"
+#EXCLUDED_CLUSTERS_LIST="${EXCLUDED_CLUSTERS_LIST:-}"
 
 
 function helperCheckScriptRequirements(){
@@ -178,6 +178,7 @@ function helperCheckSemVer() {
     echo "$@" | awk -F. '{ printf("%d%03d%03d%03d\n", $1,$2,$3,$4) }'
 }
 
+export UPDATE_TO_KUBERNETES_VERSION="$clusterversion"
 # Function clear previous files
 function helperClearTempFiles() {
     rm -rf $TEMP_FOLDER
@@ -186,13 +187,13 @@ function helperClearTempFiles() {
 
 
 function upgradeNodePoolsInCluster() {
-    local __clusterName=$1
-    local __RG=$(cat "$TEMP_FOLDER$CLUSTERS_FILE_NAME"| jq -r --arg clusterName "$__clusterName" '.[] | select(.name==$clusterName).resourceGroup')
-
-    for __nodePoolName in $(cat "$TEMP_FOLDER$CLUSTERS_FILE_NAME"| jq -r --arg clusterName "$__clusterName" '.[] | select(.name==$clusterName).agentPoolProfiles[].name')
-    do
-        upgradeNodePool $__RG $__clusterName $__nodePoolName
+    local __clusterName=$kubenetes_name
+    local __RG=$resourcegroup
+    for __nodePoolName in $(az aks nodepool list --cluster-name $__clusterName --resource-group $__RG --query "[].name" -o tsv); do
+        echo "Upgrading node pool $__nodePoolName in cluster $__clusterName"
+        az aks nodepool upgrade --cluster-name $__clusterName --resource-group $__RG --name $__nodePoolName --kubernetes-version $UPDATE_TO_KUBERNETES_VERSION 
     done
+
 }
 
 function upgradeNodePool() {
@@ -206,62 +207,109 @@ function upgradeNodePool() {
     local __nodePoolVMSize=$(cat "$TEMP_FOLDER$CLUSTERS_FILE_NAME" | jq -r --arg clusterName "$__clusterName" --arg nodePoolName "$__oldNodePoolName" '.[] | select(.name==$clusterName).agentPoolProfiles[] | select(.name==$nodePoolName).vmSize')
 
     # checkNodePoolNameisValid $__RG $__clusterName $__newNodePoolName
+    echo "$createListOfNodesInNodePool => $__oldNodePoolName"
+    echo
     createListOfNodesInNodePool $__oldNodePoolName
-
+    echo
+    echo "Creating new node pool $__newNodePoolName in cluster $__clusterName, with $__nodePoolCount nodes of size $__nodePoolVMSize"
+    echo
+    echo
     createNewNodePool $__RG $__clusterName $__newNodePoolName $__nodePoolCount $__nodePoolVMSize
     
     if [ $? -eq 0 ]
     then
+        echo "Successfully created new node pool $__newNodePoolName in cluster $__clusterName"
+        echo
+        echo
+        echo "Draining nodes in node pool $__oldNodePoolName in cluster $__clusterName"
         tainitAndDrainNodePool $__oldNodePoolName
+        echo
+        echo
+        echo "Deleting node pool $__oldNodePoolName in cluster $__clusterName"
 
         if [ $? -eq 0 ]
         then
+            echo
             deleteNodePool $__RG $__clusterName $__oldNodePoolName
+            echo
+            echo
+            echo "Successfully deleted node pool $__oldNodePoolName in cluster $__clusterName"
         else
             return 0
+            echo
         fi
     else
         return 1
+        echo
+
     fi
 }
 
 function tainitAndDrainNodePool() {
+    echo
+    echo "Draining nodes in node pool $1"
+    echo
     local __nodePoolName=$1
-    
+    echo
+    echo "kubectl get nodes --selector=agentpool=$__nodePoolName"
+    echo
     taintNodePool $__nodePoolName
-
+    echo
+    echo "kubectl get nodes --selector=agentpool=$__nodePoolName"
     if [ $? -eq 0 ]
     then
+        echo
+        echo
         drainNodePool $__nodePoolName
-        
+        echo
+        echo
+        echo "Successfully drained nodes in node pool $__nodePoolName"
         if [ $? -eq 0 ]
         then
             return 0
+            echo
         else 
             return 1
+            echo
+
         fi
     else
         return 1
+        echo
+
     fi
 }
 
 function checkNodePoolNameIsValid() {
+    echo
+    echo "Checking if node pool name $3 is valid"
     local __RG=$1
     local __clusterName=$2
     local __nodePoolName=$3
     # Commented out Reason: az aks nodepool will check length of nodePoolName
     # local __nodePoolNameLength=$(expr length $__nodePoolName)
+    echo
+    echo "az aks nodepool list --cluster-name $__clusterName --resource-group $__RG --query \"[?name=='$__nodePoolName'].name\" -o tsv" 
+    echo
+
     local __nameLength=$(expr length $__nodePoolName)
+    echo "Node pool name length: $__nameLength"
+    echo
     
     if [ "$__nameLength" -gt 12 ]
+    echo
+    echo 
     then
         echo "Name $__nodePoolName Length is greater than 12...try again"
     else 
         echo "Name length is fine"
     fi
+    echo 
+    echo
 
     az aks nodepool show -g $__RG --cluster-name $__clusterName -n $__nodePoolName -o json
-
+    echo
+    echo
     if [ $? -eq 0 ]
     then
         echo "Node Pool name $__nodePoolName already Exists"
@@ -271,20 +319,35 @@ function checkNodePoolNameIsValid() {
         return 0
     fi
 }
-
+echo
 function createListOfNodesInNodePool() {
+    echo
+    echo "Creating list of nodes in node pool $1"
+    echo
     local __nodePoolName=$1
-
+    echo
+    echo "kubectl get nodes --selector=agentpool=$__nodePoolName"
+    echo
     kubectl get nodes | grep -w -i $__nodePoolName | awk '{print $1}' > $TEMP_FOLDER"nodepool-"$__nodePoolName".txt"
+    echo
+    echo "cat $TEMP_FOLDER"nodepool-"$__nodePoolName".txt""
     return 0
+    echo
+
 }
 
 function createNewNodePool() {
+    echo
+    echo "Creating new node pool $3 in cluster $2"
+    echo
     local __RG=$1
     local __clusterName=$2
     local __newNodePoolName=$3
     local __nodePoolCount=$4
     local __nodePoolVMSize=$5
+    echo
+    echo "az aks nodepool add --cluster-name $__clusterName --resource-group $__RG --name $__newNodePoolName --node-count $__nodePoolCount --node-vm-size $__nodePoolVMSize --kubernetes-version $UPDATE_TO_KUBERNETES_VERSION"
+    echo
 
     # Create new NodePool for workloads to move too
     echo "Creating new NodePool: $__newNodePoolName"
@@ -304,16 +367,23 @@ function createNewNodePool() {
         return 1
     fi
 }
-
+echo
 # Taint Node Pool
 function taintNodePool() {
+    echo
+    echo "Tainting node pool $1"
+    echo
     local __nodePoolName=$1
     local __nodesListFile=$TEMP_FOLDER"nodepool-"$__nodePoolName".txt"
     local __taintListFile=$TEMP_FOLDER"nodepool-"$__nodePoolName"-taint.txt"
-
+    echo
+    echo "cat $__nodesListFile"
+    echo
     # duplicate Node List to Taint List to track progress
     cp $__nodesListFile $__taintListFile
-
+    echo
+    echo "cat $__taintListFile"
+    echo
     for __nodeName in $(cat $__taintListFile)
     do
         echo "Tainting Node '$__nodeName' in Node Pool '$__nodePoolName'"        
@@ -325,13 +395,20 @@ function taintNodePool() {
 
     echo "done - Tainting current Node Pool '$__nodePoolName'"
     mv $__taintListFile "$__taintListFile".done
+    echo
+
 }
 
 function untaintNodePool() {
+    echo
+    echo "Untainting node pool $1"
+    echo
     local __nodePoolName=$1
     local __nodesListFile=$TEMP_FOLDER"nodepool-"$__nodePoolName".txt"
     local __untaintListFile=$TEMP_FOLDER"nodepool-"$__nodePoolName"-untaint.txt"
-
+    echo
+    echo "cat $__nodesListFile"
+    echo
     # duplicate Node List to Taint List to track progress
     cp $__nodesListFile $__untaintListFile
 
@@ -343,15 +420,23 @@ function untaintNodePool() {
         sed -e s/$__nodeName//g -i $__untaintListFile
         echo "Done: Node '$__nodeName' in Node Pool '$__nodePoolName' Untainted."
     done
-
+    echo 
     echo "done - Untainting current Node Pool '$__nodePoolName'"
     mv $__untaintListFile "$__untaintListFile".done
+    echo
+
 }
 
 function drainNodePool() {
+    echo
+    echo "Draining node pool $1"
+    echo
     local __nodePoolName=$1
     local __nodesListFile=$TEMP_FOLDER"nodepool-"$__nodePoolName".txt"
     local __drainListFile=$TEMP_FOLDER"nodepool-"$__nodePoolName"-drain.txt"
+    echo
+    echo "cat $__nodesListFile"
+    echo
     
     # duplicate Node List to Taint List to track progress
     cp $__nodesListFile $__drainListFile
@@ -375,12 +460,18 @@ function drainNodePool() {
 
     echo "done - Draining current Node Pool '$__nodePoolName'"
     mv $__drainListFile "$__drainListFile".done
+    echo
+
 }
 
 function deleteNodePool() {
+    echo
+    echo "Deleting node pool $1"
+    echo
     local __RG=$1
     local __clusterName=$2
     local __nodePoolName=$3
+    echo
 
     # Delete current NodePool
     echo "Deleting NodePool $__nodePoolName"
@@ -399,7 +490,7 @@ function deleteNodePool() {
         return 1
     fi
 }
-
+echo
 
 ### Cluster functions
 function createClusterUpgradeCandidatesJSON(){
@@ -425,6 +516,8 @@ function createClusterUpgradeCandidatesJSON(){
 }
 
 function removeClustersFromUpgradeCandidatesJSON() {
+    echo
+    
     local __excludedClusterArray=""
     local __clustersFileJSON="$TEMP_FOLDER$CLUSTERS_FILE_NAME"
 
@@ -477,6 +570,8 @@ function checkClusterExists() {
 }
 
 function checkAndUpgradeAllClusterControlPlanes() {
+    echo
+    
     checkAllClusterControlPlanes 0
 }
 
@@ -513,11 +608,15 @@ function checkClusterControlPlane() {
 }
 
 function checkClusterControlPlaneNeedsUpgrade() {
+    echo
+    echo "Checking Cluster Control Plane: $__clusterName"
+    echo
     local __RG=$1
     local __clusterName=$2
     local __clusterK8sVersion=$3
     local __targetK8sVersion=$4
     local __upgradeControlPlane="${5:-1}"
+    echo 
 
     if [ $(helperCheckSemVer $__clusterK8sVersion) -lt $(helperCheckSemVer $__targetK8sVersion) ]
     then
@@ -526,8 +625,13 @@ function checkClusterControlPlaneNeedsUpgrade() {
         echo "Target Cluster version K8s $__targetK8sVersion"
         
         if [ "$__upgradeControlPlane" -eq 0 ]
+        echo
+        echo "Upgrade Control Plane: $__clusterName"
+        echo
         then
+            echo 
             upgradeClusterControlPlane $__RG $__clusterName $__targetK8sVersion
+            echo
             if [ $? -eq 0 ]
             then
                 return 0
@@ -545,10 +649,13 @@ function checkClusterControlPlaneNeedsUpgrade() {
 }
 
 function upgradeClusterControlPlane() {
+    echo
+    echo "Upgrading Cluster Control Plane: $__clusterName"
+    echo
     local __RG=$1
     local __clusterName=$2
     local __K8SVersion=$3
-
+    echo
     echo "Upgrading Cluster $__clusterName Control Plane to K8s v.$__K8SVersion"
     echo "Started at: $(date)"
     
@@ -556,12 +663,14 @@ function upgradeClusterControlPlane() {
     # az aks upgrade -g $__RG -n $__clusterName -k $__K8SVersion --control-plane-only --yes
 
     ## Work around for above Problem
+    echo
     local __resourceID=$(cat "$TEMP_FOLDER$CLUSTERS_FILE_NAME" | jq -r --arg RG "$__RG" --arg clusterName "$__clusterName" '.[] | select((.name==$clusterName) and (.resourceGroup==$RG)).id')
     az resource update --ids $__resourceID --set "properties.kubernetesVersion=$__K8SVersion"
 
 
     if [ $? -eq 0 ]
     then
+        echo
         echo "Succeeded: Upgraded Cluster $__clusterName Control Plane to K8s v.$__K8SVersion"
         echo "Finished at: $(date)"
         return 0
@@ -573,50 +682,77 @@ function upgradeClusterControlPlane() {
 }
 
 function checkAndRollingUpgradeAllClustersAndNodePools() {
+    echo
+    echo "Checking and Rolling Upgrading All Clusters and Node Pools"
+    echo
     for __clusterName in $(cat "$TEMP_FOLDER$CLUSTERS_FILE_NAME" | jq -r '.[] | .name')
     do
         local __RG=$(cat "$TEMP_FOLDER$CLUSTERS_FILE_NAME"| jq -r --arg clusterName "$__clusterName" '.[] | select(.name==$clusterName).resourceGroup')
         local __clusterK8sVersion=$(cat "$TEMP_FOLDER$CLUSTERS_FILE_NAME"| jq -r --arg clusterName "$__clusterName" '.[] | select(.name==$clusterName).kubernetesVersion')
         local __targetK8sVersion=$UPDATE_TO_KUBERNETES_VERSION
-
+        echo
+        echo "Checking and Rolling Upgrading Cluster: $__clusterName"
         getClusterCredentials $__RG $__clusterName
         setClusterConfigContext $__clusterName
         checkAndUpgradeClusterControlPlane $__RG $__clusterName $__clusterK8sVersion $__targetK8sVersion
-
+        echo
+        echo "Checking and Rolling Upgrading Node Pools for Cluster: $__clusterName"
         if [ $? -eq 0 ]
         then
+            echo
             upgradeNodePoolsInCluster $__clusterName
-            
+            echo
+            echo "Finished Rolling Upgrading Node Pools for Cluster: $__clusterName"
             if [ $? -eq 0 ]
             then
+                echo
                 echo "Successfully upgraded Cluster: $__clusterName"
+                echo
             else
+                echo
                 echo "Failed to upgrade Cluster: $__clusterName"
+                echo
             fi
         fi
     done
 }
 
 function getClusterCredentials() {
+    echo
+    echo "Getting Cluster Credentials: $__clusterName"
+    echo
     local __RG=$1
     local __clusterName=$2
+    echo
 
     # Get Kube Config Creds and overwrite if already exists (No User Prompts)
     az aks get-credentials -g $__RG -n $__clusterName --overwrite-existing
 }
 
 function setClusterConfigContext() {
+    echo
+    echo "Setting Cluster Config Context: $__clusterName"
+    echo
     local __clusterName=$1
-
+    echo
     kubectl config set-context $__clusterName
 }
 
 
 function main() {
+    echo
+    echo "Starting AKS Cluster and Node Pool Upgrade Script"
+    echo
     helperCheckScriptRequirements
+    echo
+    echo "Getting AKS Clusters"
+    echo
     helperClearTempFiles
+    echo
     createClusterUpgradeCandidatesJSON
+    echo
     checkAndRollingUpgradeAllClustersAndNodePools
 }
+
 
 main
