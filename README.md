@@ -14,6 +14,7 @@ Hi, my name is Ricardo Silva, and this is my repository with several scripts tha
   <img height="180em" src="https://github-readme-stats.vercel.app/api?username=ricardo2009&show_icons=true&theme=tokyonight&include_all_commits=true&count_private=true"/>
   <img height="180em" src="https://github-readme-stats.vercel.app/api/top-langs/?username=ricardo2009&layout=compact&langs_count=7&theme=tokyonight"/>
   </a>
+  ![Snake animation](https://github.com/ricardo2009/ricardo2009/blob/output/github-contribution-grid-snake.svg)
 </div>
 
 ## Scripts
