@@ -1,20 +1,35 @@
-# Welcome to the Git Automation Repository for the Azure Kubernetes Service (AKS)
 
-<img src="https://blog.autify.com/static/2f2eae815f49c7e1dd68d646863f82c0/test-automation-illustration.png" width="200" height="200" />
+<div> 
+  <a href="https://www.instagram.com/ricardoslima2009/" target="_blank"><img src="https://img.shields.io/badge/-Instagram-%23E4405F?style=for-the-badge&logo=instagram&logoColor=white" target="_blank"></a>
+   <a href="https://www.linkedin.com/in/ricardo-da-silva-lima-pcd-83b42142" target="_blank"><img src="https://img.shields.io/badge/-LinkedIn-%230077B5?style=for-the-badge&logo=linkedin&logoColor=white" target="_blank"></a> 
+</div>
 
-## This repository contains the automation scripts for the AKS. Each folder contains a README.md file that describes the purpose of the scripts in that folder and how to use them
 
-- [★] Upgrade-aks-cluster. - Contains scripts to upgrade the AKS cluster and the nodes in the cluster, using best practices.
-- [✍] Backup - Contains scripts to backup the AKS cluster and the nodes in the cluster, using best practices. {Not available yet, but coming soon!}
-- [✍] ServiceMesh
-  - [🚀] Istio - Contains scripts to install and configure Istio on the AKS cluster.
-  - [🚀 ] Linkerd - Contains scripts to install and configure Linkerd on the AKS cluster.
-- [✍] Monitoring - Contains scripts to install and configure monitoring on the AKS cluster.
-- [✍] Logging - Contains scripts to install and configure logging on the AKS cluster.
-- [✍] Security - Contains scripts to install and configure security on the AKS cluster.
-- [✍] Networking - Contains scripts to install and configure networking on the AKS cluster.
+# Welcome to Ricardo Silva's Repository!
 
-{Not available yet, but coming soon!} - These scripts are not available yet, but will be coming soon!✍🚀
+Hi, my name is Ricardo Silva, and this is my repository with several scripts that can help you a lot in your day to day, whether in a productive environment or in your laboratory!
+
+<div align="center">
+  <a href="https://github.com/ricardo2009">
+  <img height="180em" src="https://github-readme-stats.vercel.app/api?username=ricardo2009&show_icons=true&theme=tokyonight&include_all_commits=true&count_private=true"/>
+  <img height="180em" src="https://github-readme-stats.vercel.app/api/top-langs/?username=ricardo2009&layout=compact&langs_count=7&theme=tokyonight"/>
+  </a>
+</div>
+
+## Scripts
+
+- [Upgrade-aks-cluster](https://github.com/ricardo2009/script_automation_for_aks/tree/main/upgrade_cluster)
+- [Install Istio](https://github.com/ricardo2009/script_automation_for_aks/tree/main/install_istio)
+- [Azure Workbook Observability]()
+
+This repository contains a variety of scripts that can be used for various purposes. Some examples of what you might find in this repository include scripts for automating tasks, generating reports, and more.
+
+## Future scripts that are being created!
+
+- **Linkerd**: Contains scripts to install and configure Linkerd on the AKS cluster..
+- **Logging**: Contains scripts to install and configure logging on the AKS cluster.
+- **Security**: Contains scripts to install and configure security on the AKS cluster.
+- **Networking**: Contains scripts to install and configure networking on the AKS cluster.
 
 ## How to use the scripts
 
@@ -22,14 +37,6 @@
 2. Open the folder that contains the scripts you want to use.
 3. Read the README.md file in that folder.
 4. Run the scripts in the order they are listed in the README.md file.
-
-## How to contribute
-
- If you want to contribute to this repository, please read the [CONTRIBUTING.md](CONTRIBUTING.md) file.
-
-## License
-
-[MIT](LICENSE)
 
 ## Code of Conduct
 
@@ -46,11 +53,3 @@ Is this a Microsoft product? No. This is a community project. Microsoft is not r
 ## Acknowledgements
 
 This repository is based on the [Documentation oficial Microsoft](https://docs.microsoft.com/en-us/azure/aks/).
-
-## Contributors
-
-- [★] [Ricardo da Silva] --[Linkedin](https://www.linkedin.com/in/ricardo-da-silva-lima-pcd-83b42142)
-
-[★]: You can contribute to this repository by !! Forking !! it and sending a pull request with your changes.
-[✍]: You can contribute to this repository by !! Forking !! it and sending a pull request with your changes.
-[🚀]: You can contribute to this repository by !! Forking !! it and sending a pull request with your changes.
