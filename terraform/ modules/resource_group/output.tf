@@ -1,16 +1,15 @@
 output "name" {
-    value = [for rg in azurem_resource_group.rg : rg.name]
+  value = [for rg in azurerm_resource_group.rg : rg.name]
 }
 
 output "location" {
-    value = [for rg in azurem_resource_group.rg : rg.location]
+  value = [for rg in azurerm_resource_group.rg : rg.location]
 }
 
-output "ambiente" {
-    value = [for rg in azurem_resource_group.rg : rg.tags.ambiente]
+output "id" {
+  value = [for rg in azurerm_resource_group.rg : rg.id]
 }
 
-output "custom_name" {
-    value = [for rg in azurem_resource_group.rg : rg.tags.custom_name]
+output "tags" {
+  value = [for rg in azurerm_resource_group.rg : rg.tags]
 }
-
